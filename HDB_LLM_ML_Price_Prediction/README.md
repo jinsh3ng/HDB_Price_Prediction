@@ -1,7 +1,7 @@
 # GovTech Take-home Assignment 
 Hi recruiter, thank you for reviewing my application and giving me the opportunity to showcase my work. 
 
-To be upfront, this past week was unusually busy for me, and I slightly exceeded the 36-hour time frame provided. Despite that, I was able to build an application that minually captures the core functionality of the task, and I hope it meets your expectations. 
+To be upfront, this week was unusually busy for me, and I slightly exceeded the 36-hour time frame provided. Despite that, I was able to build an application that minually captures the core functionality of the task, and I hope it meets your expectations. 
 
 I also want to acknowledge that I used AI tools as part of my development process. However, the architecture, and implementation logic were driven by me.<table>
 
