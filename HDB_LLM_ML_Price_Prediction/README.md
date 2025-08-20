@@ -6,7 +6,7 @@ To be upfront, this past week was unusually busy for me, and I slightly exceeded
 I also want to acknowledge that I used AI tools as part of my development process. However, the architecture, and implementation logic were driven by me.<table>
 
 ## System Architecture
-
+Apologies if anything is confusing, this is my first time drawing such a diagram.
 <img width="683" height="550" alt="SystemArchitecture" src="https://github.com/user-attachments/assets/40af03a9-de75-466c-af76-6f3e20a3fae4" />
 
 ---
