@@ -1,179 +1,127 @@
-"""
-HDB Resale Price Prediction & Analysis System
-=============================================
-Streamlit app with Prediction and Chatbot tabs
-"""
-
 import streamlit as st
-import pandas as pd
-import numpy as np
-from datetime import datetime
-
-# ===================================================================
-# PAGE CONFIGURATION
-# ===================================================================
+import requests
 
 st.set_page_config(
-    page_title="HDB Price Prediction System",
+    page_title="HDB Price Prediction",
     page_icon="🏠",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered"
 )
 
-# ===================================================================
-# MAIN APP HEADER
-# ===================================================================
-
-st.title("🏠 HDB Resale Price Prediction System")
+st.title("🏠 HDB Resale Price Prediction")
 st.markdown("---")
 
-# Add a brief description
-st.markdown("""
-**Welcome to the HDB Price Prediction & Analysis System**
-
-This system combines machine learning with AI-powered insights to help you:
-- Predict resale flat prices across Singapore
-- Get comprehensive market analysis
-- Receive AI-generated recommendations for BTO development
-
-Choose a tab below to get started.
-""")
-
-# ===================================================================
-# TAB SETUP
-# ===================================================================
-
-# Create two tabs
-tab1, tab2 = st.tabs(["📈 Prediction", "🤖 Chatbot"])
-
-# ===================================================================
-# PREDICTION TAB
-# ===================================================================
+tab1, tab2= st.tabs(["📈 Prediction", "🤖 Chatbot"])
 
 with tab1:
-    st.header("📈 Price Prediction & Analysis")
-    
-    # Add some placeholder content structure
-    col1, col2 = st.columns([2, 1])
-    
-    with col1:
-        st.subheader("Prediction Interface")
-        st.info("🚧 Prediction functionality will be implemented here")
-        
-        # Placeholder for future prediction form
-        with st.expander("Preview: Prediction Form", expanded=False):
-            st.write("Future features will include:")
-            st.write("• Town selection dropdown")
-            st.write("• Flat type selection")
-            st.write("• Floor level range")
-            st.write("• Property characteristics input")
-            st.write("• Price prediction results")
-            st.write("• Comparison with recent transactions")
-    
-    with col2:
-        st.subheader("Market Insights")
-        st.info("📊 Market analysis will appear here")
-        
-        # Placeholder for future analytics
-        with st.expander("Preview: Analytics", expanded=False):
-            st.write("Future features will include:")
-            st.write("• Town price trends")
-            st.write("• Market statistics")
-            st.write("• Price distribution charts")
-            st.write("• Comparative analysis")
+    st.subheader("Enter Property Details")
 
-# ===================================================================
-# CHATBOT TAB
-# ===================================================================
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        town = st.text_input("🏘️ Town", placeholder="e.g., ANG MO KIO")
+
+    with col2:
+        flat_type = st.selectbox("🏠 Flat Type", 
+            ["2 ROOM", "3 ROOM", "4 ROOM", "5 ROOM", "EXECUTIVE"])
+
+    with col3:
+        storey = st.selectbox("🏢 Storey Level", ["low", "medium", "high"])
+
+    st.info("**Storey Guide:** Low (1-5 floors) | Medium (6-20 floors) | High (21+ floors)")
+
+    predict_btn = st.button("Predict Price", type="primary", use_container_width=True)
+
+    if predict_btn:
+        if not town.strip():
+            st.error("❌ Please enter a town name")
+        else:
+            with st.spinner("Filtering data, training model, and making prediction..."):
+                try:
+                    # Single API call that does everything
+                    prediction_request = {
+                        "town": town.strip().upper(),
+                        "flat_type": flat_type,
+                        "storey_range_classify": storey,
+                        "lease_remaining": 70.0,
+                        "floor_area_sqm": 75.0
+                    }
+                    
+                    response = requests.post("http://127.0.0.1:8000/predict", 
+                        json=prediction_request, timeout=30)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        
+                        if "error" in result:
+                            st.error(f"❌ {result['error']}")
+                        else:
+                            price = result["predicted_price"]
+                            training_records = result["training_records"]
+                            
+                            st.success("🎯 Prediction Complete!")
+                            st.metric("💰 Predicted Price", f"${price:,.2f}")
+                            st.info(f"📍 {town.upper()} | {flat_type} | {storey.title()} Floor | Based on {training_records} records")
+                    else:
+                        st.error("❌ Prediction request failed")
+                        
+                except requests.exceptions.ConnectionError:
+                    st.error("❌ Cannot connect to server. Make sure API is running on port 8000.")
+                except Exception as e:
+                    st.error(f"❌ Error: {str(e)}")
 
 with tab2:
-    st.header("🤖 AI Housing Assistant")
+    st.subheader("🤖 HDB AI Assistant")
+    st.markdown("Ask me anything about HDB housing, prices, policies, or recommendations!")
     
-    # Add some placeholder content structure
-    col1, col2 = st.columns([3, 1])
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
     
-    with col1:
-        st.subheader("Chat Interface")
-        st.info("🚧 AI chatbot functionality will be implemented here")
+    # Display chat messages
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+    
+    # Chat input
+    if prompt := st.chat_input("Ask about HDB housing..."):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
         
-        # Placeholder for future chat interface
-        with st.expander("Preview: Chat Features", expanded=False):
-            st.write("The AI assistant will be able to:")
-            st.write("• Answer questions about HDB market trends")
-            st.write("• Recommend estates for BTO development")
-            st.write("• Provide price analysis for different locations")
-            st.write("• Explain market factors affecting prices")
-            st.write("• Generate comprehensive market reports")
+        # Display user message
+        with st.chat_message("user"):
+            st.markdown(prompt)
         
-        # Simple placeholder chat area
-        st.text_area(
-            "Chat Preview (Non-functional)",
-            placeholder="Example: 'Please recommend housing estates that have had limited BTO launches in the past ten years...'",
-            height=200,
-            disabled=True
-        )
-    
-    with col2:
-        st.subheader("Quick Actions")
-        st.info("🎯 Quick analysis options")
+        # Get bot response
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                try:
+                    response = requests.post("http://127.0.0.1:8000/chat",
+                        json={"message": prompt}, timeout=30)
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        if "error" in result:
+                            bot_response = f"Sorry, I encountered an error: {result['error']}"
+                        else:
+                            bot_response = result["response"]
+                    else:
+                        bot_response = "Sorry, I'm having trouble connecting. Please try again."
+                        
+                except Exception as e:
+                    bot_response = f"Connection error: {str(e)}"
+                
+                st.markdown(bot_response)
         
-        # Placeholder for future quick actions
-        with st.expander("Preview: Quick Actions", expanded=False):
-            st.write("Future quick actions:")
-            st.write("• Get town summary")
-            st.write("• Compare two locations")
-            st.write("• Recent transaction alerts")
-            st.write("• Market trend analysis")
-            st.write("• BTO recommendation engine")
-
-# ===================================================================
-# SIDEBAR
-# ===================================================================
-
-with st.sidebar:
-    st.header("🛠️ System Status")
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": bot_response})
     
-    # System status indicators (placeholder)
-    st.subheader("Components")
-    st.write("🔴 Database Connection: Not Connected")
-    st.write("🔴 ML Models: Not Loaded")
-    st.write("🔴 LLM Integration: Not Active")
-    st.write("🔴 Data Pipeline: Not Running")
-    
+    # Sample questions
     st.markdown("---")
-    
-    st.subheader("📋 Development Progress")
-    st.progress(0.1, "Database Setup: 10%")
-    st.progress(0.0, "Data Pipeline: 0%")
-    st.progress(0.0, "ML Models: 0%")
-    st.progress(0.0, "LLM Integration: 0%")
-    st.progress(0.05, "Frontend: 5%")
-    
-    st.markdown("---")
-    
-    st.subheader("ℹ️ About")
-    st.write("""
-    **HDB Price Prediction System**
-    
-    Version: 0.1.0 (Development)
-    
-    Built with:
-    - Streamlit
-    - PostgreSQL
-    - Machine Learning
-    - Large Language Models
-    """)
-    
-    # Add current timestamp
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-# ===================================================================
-# FOOTER
-# ===================================================================
+        
+    if st.button("🗑️ Clear Chat", key="clear"):
+            st.session_state.messages = []
+            st.rerun()
 
 st.markdown("---")
-st.markdown("""
-<div style='text-align: center; color: #666; font-size: 0.8em;'>
-    HDB Resale Price Prediction System | Built for Singapore Housing Market Analysis
-</div>
-""", unsafe_allow_html=True)
+st.caption("HDB Price Prediction | Enter Town, Flat Type & Storey Level")
