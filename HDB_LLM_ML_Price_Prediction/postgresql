@@ -1,0 +1,53 @@
+-- Table: public.resale_transactions
+
+-- DROP TABLE IF EXISTS public.resale_transactions;
+
+CREATE TABLE IF NOT EXISTS public.resale_transactions
+(
+    month character(7) COLLATE pg_catalog."default",
+    town character varying(20) COLLATE pg_catalog."default",
+    flat_type character varying(20) COLLATE pg_catalog."default",
+    street_name character varying(50) COLLATE pg_catalog."default",
+    storey_range character varying(10) COLLATE pg_catalog."default",
+    storey_range_classify character varying(20) COLLATE pg_catalog."default",
+    floor_area_sqm double precision,
+    lease_commence_date integer,
+    resale_price double precision
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.resale_transactions
+    OWNER to postgres;
+-- Index: idx_resale_flat_type
+
+-- DROP INDEX IF EXISTS public.idx_resale_flat_type;
+
+CREATE INDEX IF NOT EXISTS idx_resale_flat_type
+    ON public.resale_transactions USING btree
+    (flat_type COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: idx_resale_month
+
+-- DROP INDEX IF EXISTS public.idx_resale_month;
+
+CREATE INDEX IF NOT EXISTS idx_resale_month
+    ON public.resale_transactions USING btree
+    (month COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: idx_resale_price
+
+-- DROP INDEX IF EXISTS public.idx_resale_price;
+
+CREATE INDEX IF NOT EXISTS idx_resale_price
+    ON public.resale_transactions USING btree
+    (resale_price ASC NULLS LAST)
+    TABLESPACE pg_default;
+-- Index: idx_resale_town
+
+-- DROP INDEX IF EXISTS public.idx_resale_town;
+
+CREATE INDEX IF NOT EXISTS idx_resale_town
+    ON public.resale_transactions USING btree
+    (town COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
